@@ -1,0 +1,25 @@
+{
+    "manifest_version": 2,
+
+    "name": "Searchmetrics JSON Parser",
+    "description": "Beautify JSON output",
+    "version": "1.0",
+
+    "content_scripts": [
+        {
+            "matches": [
+                "*://backend.local/*",
+                "*://backend.dev.searchmetrics.space/*",
+                "*://proxy.dev.searchmetrics.space/*",
+                "*://proxy-seo-search.unbelievable-machine.net/*",
+                "*://varnish-seo-search.unbelievable-machine.net/*"
+            ],
+            "css": ["pretty.css"],
+            "js": [
+                "handlebars-v4.0.10.js",
+                "pretty.js"
+            ],
+            "runs_at": "document_end"
+        }
+    ]
+}

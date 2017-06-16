@@ -1,0 +1,18 @@
+body {
+    font-size: 18px;
+}
+
+.error {
+    color: red;
+}
+
+.message {
+    border: 1px solid;
+    font-family: monospace;
+    padding: 2px;
+}
+
+.error .message {
+    border-color: darkred;
+    background-color: lightpink;
+}
