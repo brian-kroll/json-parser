@@ -1,8 +1,7 @@
 {
     "manifest_version": 2,
-
-    "name": "Searchmetrics JSON Parser",
-    "description": "Beautify JSON output",
+    "name": "__MSG_extension_name__",
+    "description": "__MSG_extension_description__",
     "version": "1.0",
 
     "content_scripts": [

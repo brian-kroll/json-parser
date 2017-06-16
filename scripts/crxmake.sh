@@ -3,9 +3,9 @@
 # Purpose: Pack a Chromium extension directory into crx format
 
 
-dir="../extension"
+extension_dir="extension"
 name=$(basename "$dir")
-crx="../packaged/JsonParser.crx"
+crx_file="JsonParser.crx"
 pub="$name.pub"
 sig="$name.sig"
 zip="$name.zip"
@@ -20,23 +20,28 @@ byte_swap () {
 print_help () {
     (
         printf "Usage:\n"
-        printf "   crxmake.sh -k <sign_key> -o <package>\n\n"
+        printf "   crxmake.sh -k <sign_key> [-o <package> -e <extension>]\n\n"
         printf "Options:\n"
-        printf "   sign_key  Path to key-file to sign package\n"
-        printf "   package   Path to output package\n\n"
+        printf "   sign_key  Path to key-file to sign package - optional if not present a new key will be generated\n"
+        printf "   package   Path to output package (default 'JsonParser.crx') \n"
+        printf "   extension Path to unpacked extension to pack (default 'extension')\n\n"
     )
+    [ -n "$1" ] && {
+        printf "\n"
+        printf "You must provide a private key to sign your package.\n"
+        printf "If you don't have one, you can generate it:\n"
+        printf "    openssl genrsa -out extension.pem 2048\n"
+        printf "Keep you key in a safe place -- you need it to update the extension later"
+    }
     exit 0
 }
 
 function _run () {
-    [ 3 -gt ${#} ] && print_help
-
     local key_file=""
-    local output_file="${crx}"
-    while getopts "k:o:h" opt; do
+    local output_file="${crx_file}"
+    while getopts "k:o:e:h" opt; do
         case ${opt} in
             \?)
-                printf "Invalid option ${1}\n"
                 ;&
             h)
                 print_help
@@ -52,21 +57,32 @@ function _run () {
                 ;;
             o)
                 output_file="${OPTARG}"
-                dir_path="$(cd "$(dirname "${output_file}")"; pwd -P)"
-                if [ ! -d "${dir_path}" ]; then
-                    printf "The directory\n   ${dir_path} \ndoes not exist."
-                    exit 1
-                fi
-                crx="${dir_path}/$(basename ${output_file})"
+                ;;
+            e)  extension_dir="${OPTARG}"
                 ;;
         esac
     done
-echo $key_file
-exit
+
+    out_dir_path=$(cd "$(dirname ${output_file})" 2>/dev/null && pwd -P)
+    if [ ! -d "${out_dir_path}" ]; then
+        printf "The directory to write the extension to\n   $(dirname ${output_file}) \ndoes not exist.\n"
+        exit 1
+    fi
+    crx_file="${out_dir_path}/$(basename ${output_file})"
+    [ "${crx_file##*.}" == "crx" ] || crx_file="${crx_file}.crx"
+
+    input_dir_path=${extension_dir}
+    if [ ! -d "${input_dir_path}" ]; then
+        printf "Could not find directory to pack:\n   ${input_dir_path}\n"
+        exit 1
+    fi
+
+    [ 2 -gt ${#} ] && print_help
+    [ -z "${key_file}" ] && print_help 1
 
     # zip up the crx dir
     cwd=$(pwd -P)
-    (cd "$dir" && zip -qr -9 -X "$cwd/$zip" .)
+    (cd "$input_dir_path" && zip -qr -9 -X "$cwd/$zip" .)
 
     # signature
     openssl sha1 -sha1 -binary -sign "${key_file}" < "${zip}" > "${sig}"
@@ -81,8 +97,8 @@ exit
     (
       echo "${crmagic_hex} ${version_hex} ${pub_len_hex} ${sig_len_hex}" | xxd -r -p
       cat "${pub}" "${sig}" "${zip}"
-    ) > "${crx}"
-    echo "Wrote ${crx}"
+    ) > "${crx_file}"
+    echo "Wrote ${crx_file}"
 }
 
 ## dont't run if sourced

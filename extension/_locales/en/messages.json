@@ -1,0 +1,8 @@
+{
+  "extension_name": {
+    "message": "Searchmetrics JSON Parser"
+  },
+  "extension_description": {
+    "message": "Beautify JSON output"
+  }
+}
