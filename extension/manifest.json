@@ -3,7 +3,7 @@
 
     "name": "Searchmetrics JSON Parser",
     "description": "Beautify JSON output",
-    "version": "1.0",
+    "version": "1.1",
 
     "content_scripts": [
         {
